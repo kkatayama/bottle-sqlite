@@ -27,7 +27,7 @@ Usage Example::
 '''
 
 __author__ = "Marcel Hellkamp"
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __license__ = 'MIT'
 
 ### CUT HERE (see setup.py)
@@ -60,7 +60,7 @@ class SQLitePlugin(object):
 
     def __init__(self, dbfile=':memory:', autocommit=True, dictrows=True,
                  keyword='db', text_factory=unicode, functions=None,
-                 aggregates=None, collations=None, extensions=None):
+                 aggregates=None, collations=None, extensions=None, detect_types=0):
         self.dbfile = dbfile
         self.autocommit = autocommit
         self.dictrows = dictrows
@@ -70,6 +70,7 @@ class SQLitePlugin(object):
         self.aggregates = aggregates or {}
         self.collations = collations or {}
         self.extensions = extensions or ()
+        self.detect_types = detect_types
 
     def setup(self, app):
         ''' Make sure that other installed plugins don't affect the same
@@ -108,6 +109,7 @@ class SQLitePlugin(object):
         aggregates = g('aggregates', self.aggregates)
         collations = g('collations', self.collations)
         extensions = g('extensions', self.extensions)
+        detect_types = g('detect_types', self.detect_types)
 
         # Test if the original callback accepts a 'db' keyword.
         # Ignore it if it does not need a database handle.
@@ -117,7 +119,7 @@ class SQLitePlugin(object):
 
         def wrapper(*args, **kwargs):
             # Connect to the database
-            db = sqlite3.connect(dbfile)
+            db = sqlite3.connect(dbfile, detect_types=detect_types)
             # set text factory
             db.text_factory = text_factory
             # This enables column access by name: row['column_name']
