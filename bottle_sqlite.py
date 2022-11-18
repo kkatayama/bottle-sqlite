@@ -27,7 +27,7 @@ Usage Example::
 '''
 
 __author__ = "Marcel Hellkamp"
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 __license__ = 'MIT'
 
 ### CUT HERE (see setup.py)
@@ -89,9 +89,11 @@ class SQLitePlugin(object):
         if bottle.__version__.startswith('0.9'):
             config = route['config']
             _callback = route['callback']
+            argspec = inspect.getargspec(_callback).args                            # callback patch
         else:
             config = route.config
             _callback = route.callback
+            argspec =  route.get_callback_args()                                    # callback patch
 
         # Override global configuration with route-specific values.
         if "sqlite" in config:
@@ -116,9 +118,14 @@ class SQLitePlugin(object):
         # argspec = inspect.getargspec(_callback)
         # if keyword not in argspec.args:
         #     return callback
+
         # -- patch to fix decorated views -- https://github.com/bottlepy/bottle-sqlite/issues/21
-        params = inspect.signature(_callback).parameters
-        if keyword not in params:
+        # params = inspect.signature(_callback).parameters
+        # if keyword not in params:
+        #     return callback
+
+        # -- patch to fix callbacks -- https://github.com/bottlepy/bottle-sqlite/pull/16/files
+        if keyword not in argspec:
             return callback
 
 
