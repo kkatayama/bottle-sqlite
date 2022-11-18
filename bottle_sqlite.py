@@ -27,7 +27,7 @@ Usage Example::
 '''
 
 __author__ = "Marcel Hellkamp"
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __license__ = 'MIT'
 
 ### CUT HERE (see setup.py)
@@ -113,9 +113,14 @@ class SQLitePlugin(object):
 
         # Test if the original callback accepts a 'db' keyword.
         # Ignore it if it does not need a database handle.
-        argspec = inspect.getargspec(_callback)
-        if keyword not in argspec.args:
+        # argspec = inspect.getargspec(_callback)
+        # if keyword not in argspec.args:
+        #     return callback
+        # -- patch to fix decorated views -- https://github.com/bottlepy/bottle-sqlite/issues/21
+        params = inspect.signature(_callback).parameters
+        if keyword not in params:
             return callback
+
 
         def wrapper(*args, **kwargs):
             # Connect to the database
